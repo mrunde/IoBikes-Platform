@@ -1,37 +1,13 @@
-﻿-- Table: measurements
-
-DROP TABLE measurements;
-
-CREATE TABLE measurements
-(
-  id serial NOT NULL,
-  loc geometry,
-  theft_protection boolean,
-  dat text,
-  "time" timestamp without time zone
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE measurements
-  OWNER TO postgres;
-
--- test insert
---INSERT INTO measurements VALUES (1, ST_PointFromText('POINT(7.595994949341 51.969207763672)'), true, NULL);
-
--- get example data
-select * from iobdata;
-select data from iobdata where id = 31;
-
+﻿
 -- function to create get all the information for a measurement
-DROP FUNCTION IF EXISTS getMeasurementInformation() CASCADE;
-CREATE FUNCTION getMeasurementInformation() RETURNS TRIGGER AS
+DROP FUNCTION IF EXISTS getMessagesInformation() CASCADE;
+CREATE FUNCTION getMessagesInformation() RETURNS TRIGGER AS
 $BODY$
     DECLARE
 	complete_data_string text; -- a row in loop
 	newest integer;
 	pos_start_data integer; -- the position where the data string starts
-	data_sub text; -- the hex encoded data string sent from the device
+	data_sub varchar(20); -- the hex encoded data string sent from the device
 	pos_start_lon integer; -- the position where the lon string starts
 	lon double precision; -- the lon string from the device
 	pos_start_lat integer; -- the position where the lat string starts
@@ -39,12 +15,14 @@ $BODY$
 	pos_start_time integer; -- the position where the data string starts
 	time_sub text; -- the time string from the device
 	theft_protection boolean; -- indicating if theft protection is on / off
+	pos_start_id integer; -- the position where the device id starts
+	dev_id varchar(20); -- device ID
 
 	point_str text; -- string to create point
         loc point; -- location point resulting from lon / lat
         t timestamp;
     BEGIN  
-	RAISE INFO 'BEGIN getMeasurementInformation';
+	RAISE INFO 'BEGIN getMessagesInformation';
         -- get data from newest entry
 	SELECT max(id) FROM iobdata into newest;
 	RAISE INFO 'newest: %', newest;
@@ -78,15 +56,30 @@ $BODY$
 	SELECT position('"lat_decimal": "{' in complete_data_string) into pos_start_lat;
 	SELECT substring(complete_data_string from (pos_start_lat+17) for 15)::double precision into lat;
 	RAISE INFO 'lat: %', lat;
-	INSERT INTO measurements VALUES (newest, ST_MakePoint(lon, lat), theft_protection, data_sub, t);
-	RAISE INFO 'Data added to measurements table!';
+	-- device id
+	select position('"id": "' in complete_data_string) into pos_start_id;
+	RAISE INFO 'pos_start_id: %', pos_start_id;
+	SELECT substring(complete_data_string from (pos_start_id+8) for 5) into dev_id;
+	RAISE INFO 'device id: %', dev_id;
+
+	-- add data to devices
+	if ((select count(device_id) from devices where device_id = dev_id) = 0) THEN
+		INSERT INTO devices VALUES (dev_id, theft_protection);
+		RAISE INFO 'Data added to devices table!';
+	END IF;
+	
+	-- add data to message
+	INSERT INTO messages VALUES (newest, dev_id, ST_MakePoint(lon, lat), t, data_sub);
+	RAISE INFO 'Data added to messages table!';
+	
+	-- add data to 
 	RETURN NULL; -- result is ignored since this is an AFTER trigger
     END;
 $BODY$
 LANGUAGE plpgsql;
 
 -- test function
---select getMeasurementInformation();
+--select getMessagesInformation();
 
 -- Finally add the Trigger
-CREATE TRIGGER add_measurements AFTER INSERT ON iobdata EXECUTE PROCEDURE getMeasurementInformation();
+CREATE TRIGGER iob_trigger AFTER INSERT ON iobdata EXECUTE PROCEDURE getMessagesInformation();

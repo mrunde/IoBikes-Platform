@@ -1,4 +1,4 @@
 <?php
-$user = "postgres";
-$pass = "admin1234";
+$user = "theUser";
+$pass = "thePassword";
 ?>
