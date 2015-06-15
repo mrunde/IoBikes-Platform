@@ -31,7 +31,7 @@ $BODY$
 	-- data sub
 	select position('"data": "' in complete_data_string) into pos_start_data;
 	RAISE INFO 'pos_start_data: %', pos_start_data;
-	SELECT substring(complete_data_string from (pos_start_data+10) for 18) into data_sub;
+	SELECT substring(complete_data_string from (pos_start_data+9) for 18) into data_sub;
 	RAISE INFO 'data_sub: %', data_sub;
 	RAISE INFO 'theft_str: %', substring(data_sub from 1 for 2);
 	-- theft_protection
@@ -44,22 +44,22 @@ $BODY$
 	-- time sub
 	SELECT position('"time": "' in complete_data_string) into pos_start_time;
 	RAISE INFO 'pos_start_time: %', pos_start_time;
-	SELECT substring(complete_data_string from (pos_start_time+10) for 10) into time_sub;
+	SELECT substring(complete_data_string from (pos_start_time+9) for 10) into time_sub;
 	RAISE INFO 'time_sub: %', time_sub;
 	SELECT to_timestamp(cast(time_sub as double precision)) into t;
 	RAISE INFO 't (timestamp): %', t;
 	-- lon
-	SELECT position('"lon_decimal": "{' in complete_data_string) into pos_start_lon;
-	SELECT substring(complete_data_string from (pos_start_lon+17) for 14)::double precision into lon;
+	SELECT position('"lon_decimal":' in complete_data_string) into pos_start_lon;
+	SELECT substring(complete_data_string from (pos_start_lon+16) for 14)::double precision into lon;
 	RAISE INFO 'lon: %', lon;
 	-- lat
-	SELECT position('"lat_decimal": "{' in complete_data_string) into pos_start_lat;
-	SELECT substring(complete_data_string from (pos_start_lat+17) for 15)::double precision into lat;
+	SELECT position('"lat_decimal":' in complete_data_string) into pos_start_lat;
+	SELECT substring(complete_data_string from (pos_start_lat+16) for 15)::double precision into lat;
 	RAISE INFO 'lat: %', lat;
 	-- device id
 	select position('"id": "' in complete_data_string) into pos_start_id;
 	RAISE INFO 'pos_start_id: %', pos_start_id;
-	SELECT substring(complete_data_string from (pos_start_id+8) for 5) into dev_id;
+	SELECT substring(complete_data_string from (pos_start_id+7) for 5) into dev_id;
 	RAISE INFO 'device id: %', dev_id;
 
 	-- add data to devices
@@ -78,9 +78,6 @@ $BODY$
     END;
 $BODY$
 LANGUAGE plpgsql;
-
--- test function
---select getMessagesInformation();
 
 -- Finally add the Trigger
 CREATE TRIGGER iob_trigger AFTER INSERT ON iobdata EXECUTE PROCEDURE getMessagesInformation();
