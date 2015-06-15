@@ -69,7 +69,8 @@ $BODY$
 	END IF;
 	
 	-- add data to message
-	INSERT INTO messages VALUES (newest, dev_id, ST_MakePoint(lon, lat), t, data_sub);
+	--INSERT INTO messages VALUES (newest, dev_id, ST_MakePoint(lon, lat), t, data_sub); -- point version
+	INSERT INTO messages VALUES (newest, dev_id, lon, lat, t); -- lon, lat version
 	RAISE INFO 'Data added to messages table!';
 	
 	-- add data to 
