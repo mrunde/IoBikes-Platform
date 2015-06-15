@@ -6,20 +6,19 @@ $BODY$
     DECLARE
 	complete_data_string text; -- a row in loop
 	newest integer;
-	pos_start_data integer; -- the position where the data string starts
+	--pos_start_data integer; -- the position where the data string starts
 	data_sub varchar(20); -- the hex encoded data string sent from the device
-	pos_start_lon integer; -- the position where the lon string starts
+	--pos_start_lon integer; -- the position where the lon string starts
 	lon double precision; -- the lon string from the device
-	pos_start_lat integer; -- the position where the lat string starts
+	--pos_start_lat integer; -- the position where the lat string starts
 	lat double precision; -- the lat string from the device
-	pos_start_time integer; -- the position where the data string starts
+	--pos_start_time integer; -- the position where the data string starts
 	time_sub text; -- the time string from the device
 	theft_protection boolean; -- indicating if theft protection is on / off
-	pos_start_id integer; -- the position where the device id starts
+	--pos_start_id integer; -- the position where the device id starts
 	dev_id varchar(20); -- device ID
-
-	point_str text; -- string to create point
-        loc point; -- location point resulting from lon / lat
+	
+        --loc point; -- location point resulting from lon / lat
         t timestamp;
     BEGIN  
 	RAISE INFO 'BEGIN getMessagesInformation';
@@ -29,9 +28,13 @@ $BODY$
         SELECT data FROM iobdata where id = newest into complete_data_string;
 	RAISE INFO 'DATA: %', complete_data_string;
 	-- data sub
+	/*
 	select position('"data": "' in complete_data_string) into pos_start_data;
 	RAISE INFO 'pos_start_data: %', pos_start_data;
 	SELECT substring(complete_data_string from (pos_start_data+9) for 18) into data_sub;
+	*/
+	SELECT data->>'data' FROM iobdata WHERE id = newest into data_sub;
+	
 	RAISE INFO 'data_sub: %', data_sub;
 	RAISE INFO 'theft_str: %', substring(data_sub from 1 for 2);
 	-- theft_protection
@@ -42,24 +45,38 @@ $BODY$
 	END IF;
 	RAISE INFO 'theft_protection: %', theft_protection;
 	-- time sub
-	SELECT position('"time": "' in complete_data_string) into pos_start_time;
-	RAISE INFO 'pos_start_time: %', pos_start_time;
-	SELECT substring(complete_data_string from (pos_start_time+9) for 10) into time_sub;
+	/*
+	--SELECT position('"time": "' in complete_data_string) into pos_start_time;
+	--RAISE INFO 'pos_start_time: %', pos_start_time;
+	--SELECT substring(complete_data_string from (pos_start_time+9) for 10) into time_sub;
+	*/
+	SELECT data->>'time' FROM iobdata WHERE id = newest into time_sub;
 	RAISE INFO 'time_sub: %', time_sub;
 	SELECT to_timestamp(cast(time_sub as double precision)) into t;
 	RAISE INFO 't (timestamp): %', t;
+	
 	-- lon
+	/*
 	SELECT position('"lon_decimal":' in complete_data_string) into pos_start_lon;
 	SELECT substring(complete_data_string from (pos_start_lon+16) for 14)::double precision into lon;
+	*/
+	SELECT data->>'lon_decimal' FROM iobdata WHERE id = newest into lon;
 	RAISE INFO 'lon: %', lon;
+	
 	-- lat
+	/*
 	SELECT position('"lat_decimal":' in complete_data_string) into pos_start_lat;
 	SELECT substring(complete_data_string from (pos_start_lat+16) for 15)::double precision into lat;
+	*/
+	SELECT data->>'lat_decimal' FROM iobdata WHERE id = newest into lat;
 	RAISE INFO 'lat: %', lat;
 	-- device id
+	/*
 	select position('"id": "' in complete_data_string) into pos_start_id;
 	RAISE INFO 'pos_start_id: %', pos_start_id;
 	SELECT substring(complete_data_string from (pos_start_id+7) for 5) into dev_id;
+	*/
+	SELECT data->>'id' FROM iobdata WHERE id = newest into dev_id;
 	RAISE INFO 'device id: %', dev_id;
 
 	-- add data to devices
