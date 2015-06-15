@@ -16,9 +16,9 @@ CREATE TABLE geofences (
 CREATE TABLE messages (
 	message_id SERIAL PRIMARY KEY,
 	device_id varchar(20) NOT NULL REFERENCES devices(device_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	loc geometry,
-	"time" timestamp without time zone,
-	"data" varchar(20) NOT NULL
+	lon DOUBLE PRECISION,
+	lat DOUBLE PRECISION,
+	"time" timestamp without time zone
 );
 
 CREATE TABLE iobdata (
