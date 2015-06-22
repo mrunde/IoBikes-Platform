@@ -3,7 +3,7 @@ include('insert/config.php');
 header('Content-Type: application/json');
 
 // logging creates a file with some information in the end
-$log = false;
+$log = true;
 // the echo documents all steps of the script
 $echo = false;
 
@@ -92,10 +92,15 @@ if($echo){
 }
 
 // theft protection
-$theft_protection = false;
-echo 'theft_str: ' . substr($data_string, 0, 2) . "\n";
+$theft_protection = 'FALSE';
 if(substr($data_string, 0, 2) == '01'){
-	$theft_protection = true;
+	$theft_protection = 'TRUE';
+}
+if($log){
+	$logger = $logger . 'theft_protection: ' . $theft_protection . "\n";
+}
+if($echo){
+	echo 'theft_protection: ' . $theft_protection . "\n";
 }
 
 // time
