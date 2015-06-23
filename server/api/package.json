@@ -1,0 +1,13 @@
+{
+  "name": "iob-api",
+  "version": "0.0.1",
+  "description": "Internet of Bicycles Platform",
+  "main": "server.js",
+  "author": "Marius Runde, Lars Syfuß, Daniel Sawatzky",
+  "license": "",
+  "dependencies": {
+    "express": "~4.12.2",
+    "body-parser": "~1.12.0",
+    "pg": "^4.3.0"
+  }
+}
