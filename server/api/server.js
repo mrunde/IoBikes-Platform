@@ -19,10 +19,8 @@ var bodyParser = require('body-parser');  // important package for post method
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
 // change username and password before starting the server 
-var conString =  'postgres://username:password@localhost:5432/iob?ssl=true';
-//process.env.DATABASE_URL ||
-//var client = new pg.Client(conString);
-//var Db   = require('./app/models/database');
+var conString = process.env.DATABASE_URL || 'postgres://username:password@giv-iob.uni-muenster.de/iob';
+//var db_model = require('./app/models/database');
 
 // Public folder to upload media, etc. (not required yet)
 app.set("view options", {layout: false});
@@ -32,16 +30,9 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;      // set our port
+var port = process.env.PORT || 8080;      // set our port, change before roll-out
 
-/* Some stuff for later use
-//var http = require('http');
-http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-        res.end('Hello, world! [helloworld sample; iisnode version is '
-          + process.env.IISNODE_VERSION + ', node version is ' + process.version + ']');
-}).listen(process.env.PORT);
-*/
+var http = require('http');
 
 /****************************
 	2. Routes for API
@@ -58,27 +49,25 @@ router.use(function(req, res, next) {
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'Yee-haw! Welcome to our IoB API!' });
+    res.json({ message: 'Welcome to our IoB API!' });
 });
 
-// more routes for the API will follow...
-
-/*
+/* try with DB model -- not working because tutorial was for mongoDB
 router.route('/messages')
-
     // get all the messages (accessed at GET http://localhost:8080/api/messages)
     .get(function(req, res) {
         Messages.find(function(err, messages) {
             if (err)
                 res.send(err);
-
             res.json(messages);
         });
     });
 */
 
-// GET all messages -  ORDER BY message_id ASC
-router.get('/messages', function(req, res) {
+// GET all messages: SELECT * FROM messages ORDER BY message_id ASC;
+
+// GET all messages from a specific device
+router.get('/messages/:device_id', function(req, res) {
 
     var results = [];
 
@@ -89,7 +78,7 @@ router.get('/messages', function(req, res) {
     pg.connect(conString, function(err, client, done) {
 
         // SQL Query > Select Data
-        var query = client.query("SELECT * FROM messages");
+        var query = client.query("SELECT * FROM messages ORDER BY message_id ASC;");
 
         // Stream results back one row at a time
         query.on('row', function(row) {
@@ -105,6 +94,7 @@ router.get('/messages', function(req, res) {
         // Handle Errors
         if(err) {
           console.log(err);
+		  res.json({ message: 'Error!' });
         }
 
     });
