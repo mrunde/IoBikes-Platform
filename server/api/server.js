@@ -218,12 +218,177 @@ router.delete('/messages/:message_id', function(req, res) {
 2.2 Geofences
 ****************/
 // POST a geofence
+/* WIP
+router.post('/geofences', function(req, res) {
+
+    // grab data from http request
+    var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, radius: req.body.radius}
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - insert data
+        var query = client.query({
+            text: 'INSERT INTO geofences(device_id, lon, lat, radius) VALUES ($1, SELECT ST_Buffer(ST_MakePoint($2, $3)::geography, $4)::geometry)',
+            values: [data.dev_id, data.lon, data.lat, data.radius]
+        });
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json({ message: 'POST was successful!', device: data.dev_id})
+        });
+
+        // handle errors
+        if(err) {
+            console.log(err);
+            res.json({ message: 'Error!' });
+        }
+    });
+});
+*/
+
+// GET all geofences from a specific device
+/* WIP
+router.get('/geofences/device/:id', function(req, res) {
+
+    var results = [];
+    var deviceId = req.params.id;
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - select data
+        var query = client.query({
+            text: 'SELECT * FROM geofences WHERE device_id = $1 ORDER BY geofence_id ASC', 
+            values: [deviceId]
+        });
+
+        // stream results back one row at a time
+        query.on('row', function(row) {
+            results.push(row);
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json(results);
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+          res.json({ message: 'Error!' });
+        }
+
+    });
+});
+*/
 
 // GET one geofence
+/* WIP
+router.get('/geofences/:id', function(req, res) {
+
+    var results = [];
+    var geofenceId = req.params.id;
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - select data
+        var query = client.query('SELECT * FROM geofences WHERE geofence_id = ($1)', [geofenceId]);
+
+        // stream results back one row at a time
+        query.on('row', function(row) {
+            results.push(row);
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json(results);
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+          res.json({ message: 'Error!' });
+        }
+
+    });
+});
+*/
 
 // DELETE one geofence
+/* WIP
+router.delete('/geofences/:id', function(req, res) {
+
+    var geofenceId = req.params.id;
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - delete data
+        var query = client.query('DELETE FROM geofences WHERE geofence_id = ($1)', [geofenceId]);
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json({ message: 'DELETE was successful!', id: geofenceId})
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+          res.json({ message: 'Error!' });
+        }
+
+    });
+});
+*/
 
 // GET boolean message in geofence
+router.get('/:geofence_id/:message_id', function(req, res) {
+
+    var result;
+    var messageLat;
+    var messageLon;
+    var geofenceId = req.params.geofence_id;
+    var messageId = req.params.message_id;
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - select data
+        var queryData = client.query('SELECT * FROM messages WHERE message_id = ($1)', [messageId]);
+
+        // stream results back one row at a time
+        queryData.on('row', function(row) {
+            messageLat = row.lat;
+            messageLon = row.lon;
+        });
+
+        // SQL Query - select function
+        var queryFunction = client.query('SELECT point_in_geofence($1, $2, $3)', [geofenceId, messageLon, messageLat]);
+
+        // stream results back one row at a time
+        queryFunction.on('row', function(row) {
+            result = row.point_in_geofence;
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json({ pointInPolygon: result });
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+          res.json({ message: 'Error!' });
+        }
+
+    });
+});
 
 /***************
 2.3 Devices
