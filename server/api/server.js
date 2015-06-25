@@ -18,6 +18,7 @@ Table of Content
 var express = require('express');         // call express framework
 var app = express();                      // define our app using express
 var bodyParser = require('body-parser');  // important package for post method
+var multer = require('multer'); 
 
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
@@ -30,12 +31,13 @@ app.set("view options", {layout: false});
 app.use(express.static(__dirname + '/public'));
 
 // Configure app to use bodyParser() - this will let us get the data from a POST
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer()); // for parsing multipart/form-data
 
-var port = process.env.PORT || 8080;      // set our port, change before roll-out
+var port = process.env.PORT || 80;      // set our port, change before roll-out
 
-var http = require('http');
+//var http = require('http');
 
 /****************************
 	2. Routes for API
@@ -120,15 +122,20 @@ router.get('/messages/:device_id', function(req, res) {
     });
 });
 
-// POST one message (Error: Null value in column hurts NOT-NULL constraint)
+// POST one message (Error: Insert or Update table 'messages' hurts Foreignkey-Constraint 'messages_device_id_fkey)
 router.post('/messages', function(req, res) {
 
 	// grab data from http request
-	var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, time: req.body.timestamp};
-
+	var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, time: req.body.time};
+	
+	//console.log("Device ID = " + data.dev_id);
+	//console.log("Longitude = " + data.lon);
+	//console.log("Latitude = " + data.lat);
+	//console.log("Time = " + data.time);
+	
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
-
+		
         // SQL Query - insert data
         var query = client.query({
 			text: 'INSERT INTO messages(device_id, lon, lat, time) VALUES ($1,$2,$3,$4)',
