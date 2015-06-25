@@ -246,7 +246,6 @@ router.post('/geofences', function(req, res) {
 });
 
 // GET all geofences from a specific device
-/* WIP
 router.get('/geofences/device/:id', function(req, res) {
 
     var results = [];
@@ -280,10 +279,8 @@ router.get('/geofences/device/:id', function(req, res) {
 
     });
 });
-*/
 
 // GET one geofence
-/* WIP
 router.get('/geofences/:id', function(req, res) {
 
     var results = [];
@@ -314,10 +311,8 @@ router.get('/geofences/:id', function(req, res) {
 
     });
 });
-*/
 
 // DELETE one geofence
-/* WIP
 router.delete('/geofences/:id', function(req, res) {
 
     var geofenceId = req.params.id;
@@ -342,10 +337,9 @@ router.delete('/geofences/:id', function(req, res) {
 
     });
 });
-*/
 
 // GET boolean message in geofence
-router.get('/:geofence_id/:message_id', function(req, res) {
+router.get('/geofences/:geofence_id/:message_id', function(req, res) {
 
     var result;
     var messageLat;
