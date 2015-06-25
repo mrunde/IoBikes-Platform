@@ -218,7 +218,6 @@ router.delete('/messages/:message_id', function(req, res) {
 2.2 Geofences
 ****************/
 // POST a geofence
-/* WIP
 router.post('/geofences', function(req, res) {
 
     // grab data from http request
@@ -229,7 +228,7 @@ router.post('/geofences', function(req, res) {
 
         // SQL Query - insert data
         var query = client.query({
-            text: 'INSERT INTO geofences(device_id, lon, lat, radius) VALUES ($1, SELECT ST_Buffer(ST_MakePoint($2, $3)::geography, $4)::geometry)',
+            text: 'INSERT INTO geofences(device_id, lon, lat, radius) VALUES ($1, $2, $3, $4)',
             values: [data.dev_id, data.lon, data.lat, data.radius]
         });
         // after all data is returned, close connection and return results
@@ -245,7 +244,6 @@ router.post('/geofences', function(req, res) {
         }
     });
 });
-*/
 
 // GET all geofences from a specific device
 /* WIP
