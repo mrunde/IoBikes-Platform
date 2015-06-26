@@ -36,43 +36,6 @@ if ($pgsql_conn) {
     exit;
 }
 
-// just needed as long as device group wants to check their messages
-if (!$ignore_iobdata) {
-	// get complete data as json
-	$data = json_encode($_GET);
-
-	// get ip of device
-	$ip = $_SERVER['REMOTE_ADDR'];
-	if($log){
-		$logger = $logger . 'IP of sending device is: ' . $ip . "\n";
-	}
-	if($echo){
-		echo 'IP of sending device is: ' . $ip . "\n";
-	}
-
-	// insert statement for iobdata table
-	$insert_iob = "INSERT INTO iobdata (ip, data) VALUES ('$ip', '$data')";
-	if($log){
-		$logger = $logger . 'Insert statement for iobdata table: ' . $insert_iob . "\n";
-	}
-	if($echo){
-		echo 'Insert statement for iobdata table: ' . $insert_iob . "\n";
-	}
-
-	// insert into iobdata table
-	$result = pg_query($pgsql_conn, $insert_iob);
-	if (!$result) {
-	  echo "An error occurred while inserting to iobdata table.\n";
-	  exit;
-	}
-	if($log){
-		$logger = $logger . 'Successfully added data to iobdata table! ' . "\n"; 
-	}
-	if($echo){
-		echo 'Successfully added data to iobdata table! ' . "\n"; 
-	}
-}
-
 // device id
 $device_id = ($_GET["id"]);
 if($log){
@@ -119,6 +82,24 @@ if($log){
 }
 if($echo){
 	echo 'timestamp: ' . $timestamp . "\n";
+}
+
+// temperature
+$temperature_hex = substr(substr($data_string, -4), -2) . substr(substr($data_string, -4), 0, 2);
+if($log){
+	$logger = $logger . 'temperature_hex: ' . $temperature_hex . "\n";
+}
+if($echo){
+	echo 'temperature_hex: ' . $temperature_hex . "\n";
+}
+
+// temperature in integer
+$temperature_integer = hexdec($temperature_hex);
+if($log){
+	$logger = $logger . 'temperature_integer: ' . $temperature_integer . "\n"; 
+}
+if($echo){
+	echo 'temperature_integer: ' . $temperature_integer . "\n"; 
 }
 
 // lon
@@ -170,6 +151,48 @@ if($echo){
 	echo 'lat_decimal: ' . $lat_decimal . "\n"; 
 }
 
+// just needed as long as device group wants to check their messages
+if (!$ignore_iobdata) {
+	// get complete data as json
+	$data = json_encode($_GET);
+
+	// get ip of device
+	$ip = $_SERVER['REMOTE_ADDR'];
+	if($log){
+		$logger = $logger . 'IP of sending device is: ' . $ip . "\n";
+	}
+	if($echo){
+		echo 'IP of sending device is: ' . $ip . "\n";
+	}
+	
+	// append new lon & lat & temperature  to $data
+	$str_to_replace = '"data":';
+	$replace_data_str = '"lon_decimal":"' . $lon_decimal . '","lat_decimal":"' . $lat_decimal . '","temperature_integer":"' . $temperature_integer . '","data":';
+	$extended_data = str_replace($str_to_replace, $replace_data_str, $data);
+
+	// insert statement for iobdata table
+	$insert_iob = "INSERT INTO iobdata (ip, data) VALUES ('$ip', '$extended_data')";
+	if($log){
+		$logger = $logger . 'Insert statement for iobdata table: ' . $insert_iob . "\n";
+	}
+	if($echo){
+		echo 'Insert statement for iobdata table: ' . $insert_iob . "\n";
+	}
+
+	// insert into iobdata table
+	$result = pg_query($pgsql_conn, $insert_iob);
+	if (!$result) {
+	  echo "An error occurred while inserting to iobdata table.\n";
+	  exit;
+	}
+	if($log){
+		$logger = $logger . 'Successfully added data to iobdata table! ' . "\n"; 
+	}
+	if($echo){
+		echo 'Successfully added data to iobdata table! ' . "\n"; 
+	}
+}
+
 // check if device already exists in table
 $exists_query = "SELECT COUNT(device_id) FROM devices WHERE device_id = '$device_id'";
 $result = pg_query($pgsql_conn, $exists_query);
@@ -210,7 +233,7 @@ if($echo){
 }
 
 // insert statement messages table
-$insert_messages = "INSERT INTO messages (device_id, lon, lat, time) VALUES ('$device_id', $lon_decimal, $lat_decimal, '$timestamp')";
+$insert_messages = "INSERT INTO messages (device_id, lon, lat, time, temp) VALUES ('$device_id', $lon_decimal, $lat_decimal, '$timestamp', '$temperature_integer')";
 if($log){
 	$logger = $logger . 'insert statement for messages table: ' . $insert_messages . "\n"; 
 }
