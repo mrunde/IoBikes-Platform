@@ -312,6 +312,42 @@ router.get('/geofences/:id', function(req, res) {
     });
 });
 
+// PUT one geofence (update)
+router.put('/geofences/:id', function(req, res) {
+
+    var results = [];
+    var geofenceId = req.params.geofence_id;
+    var data = {lon: req.body.lon, lat: req.body.lat, radius: req.body.radius};
+    
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - update data
+        var query = client.query({
+            text: 'UPDATE geofences SET lon=($2), lat=($3), radius=($4) WHERE geofence_id=($1)',
+            values: [geofenceId, data.lon, data.lat, data.radius]
+        });
+
+        // stream results back one row at a time
+        query.on('row', function(row) {
+            results.push(row);
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+            return res.json({ message: 'UPDATE was successful!', geofence: geofenceId, lon: data.lon, lat: data.lat, radius: data.radius});
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+          res.json({ message: 'Error!' });
+        }
+
+    });
+});
+
 // DELETE one geofence
 router.delete('/geofences/:id', function(req, res) {
 
