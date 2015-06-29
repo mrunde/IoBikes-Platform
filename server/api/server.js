@@ -167,8 +167,11 @@ router.get('/messages/:message_id', function(req, res) {
     pg.connect(conString, function(err, client, done) {
 
         // SQL Query - select data
-        var query = client.query('SELECT * FROM messages WHERE message_id = ($1)', [messageId]);
-
+		var query = client.query({
+			text: 'SELECT * FROM messages WHERE message_id = $1', 
+			values: [messageId]
+		});
+		
         // stream results back one row at a time
         query.on('row', function(row) {
             results.push(row);
