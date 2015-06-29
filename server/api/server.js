@@ -88,10 +88,10 @@ router.route('/messages')
 // GET all messages (not needed now): SELECT * FROM messages ORDER BY message_id ASC;
 
 // GET all messages from a specific device
-router.get('/messages/:device_id', function(req, res) {
+router.get('/messages/device/:id', function(req, res) {
 
     var results = [];
-	var deviceId = req.params.device_id;
+	var deviceId = req.params.id;
 
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
@@ -158,10 +158,10 @@ router.post('/messages', function(req, res) {
 });
 
 // GET one message
-router.get('/messages/:message_id', function(req, res) {
+router.get('/messages/:id', function(req, res) {
 
     var results = [];
-	var messageId = req.params.message_id;
+	var messageId = req.params.id;
 
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
@@ -193,9 +193,9 @@ router.get('/messages/:message_id', function(req, res) {
 });
 
 // DELETE one message
-router.delete('/messages/:message_id', function(req, res) {
+router.delete('/messages/:id', function(req, res) {
 
-	var messageId = req.params.message_id;
+	var messageId = req.params.id;
 
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
