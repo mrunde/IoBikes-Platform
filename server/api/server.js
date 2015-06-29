@@ -126,20 +126,21 @@ router.get('/messages/:device_id', function(req, res) {
 router.post('/messages', function(req, res) {
 
 	// grab data from http request
-	var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, time: req.body.time};
+	var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, time: req.body.time, temp: req.body.temp};
 	
 	//console.log("Device ID = " + data.dev_id);
 	//console.log("Longitude = " + data.lon);
 	//console.log("Latitude = " + data.lat);
 	//console.log("Time = " + data.time);
+	//console.log("Temperature = " + data.temp);
 	
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
 		
         // SQL Query - insert data
         var query = client.query({
-			text: 'INSERT INTO messages(device_id, lon, lat, time) VALUES ($1,$2,$3,$4)',
-			values: [data.dev_id, data.lon, data.lat, data.time]
+			text: 'INSERT INTO messages(device_id, lon, lat, time, temp) VALUES ($1,$2,$3,$4,$5)',
+			values: [data.dev_id, data.lon, data.lat, data.time, data.temp]
 		});
         // after all data is returned, close connection and return results
         query.on('end', function() {
