@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset='utf-8'>
-	<title>IoB Callback Test</title>
+	<title>IoB Callback</title>
 </head>
 <style type="text/css">
 	body {
@@ -22,7 +22,7 @@
 	}
 </style>
 <body>
-<p>Die letzten 50 Einträge, neueste Einträge oben.</p>
+<p>Last 1000 entries, latest entries above.</p>
 
 <table>
 <thead>
@@ -36,7 +36,7 @@ include('config.php');
 $dbh = new PDO('pgsql:host=localhost;dbname=iob;', $user, $pass);
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$sql = 'SELECT * FROM iobdata ORDER BY id DESC LIMIT 50';
+$sql = 'SELECT * FROM iobdata ORDER BY id DESC LIMIT 1000';
 foreach ($dbh->query($sql) as $row) {
 ?>
 <tr>
