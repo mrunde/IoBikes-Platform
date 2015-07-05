@@ -4,7 +4,7 @@
 Table of Content
 
 1. Basic Server Setup
-2. Routes for API
+2. Routes for API (Source: http://mherman.org/blog/2015/02/12/postgresql-and-nodejs)
 	2.1 Messages
 	2.2 Geofences
 	2.3 Devices
@@ -19,7 +19,8 @@ var express = require('express');         // call express framework
 var app = express();                      // define our app using express
 var bodyParser = require('body-parser');  // important package for post method
 var multer = require('multer'); 		  // middleware for handling multipart/form-data
-
+var util = require('util');
+	
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
 // replace USERNAME and PASSWORD before starting the server 
@@ -113,12 +114,6 @@ router.post('/messages', function(req, res) {
 	// grab data from http request
 	var data = {dev_id: req.body.device_id, lon: req.body.lon, lat: req.body.lat, time: req.body.time, temp: req.body.temp};
 	
-	//console.log("Device ID = " + data.dev_id);
-	//console.log("Longitude = " + data.lon);
-	//console.log("Latitude = " + data.lat);
-	//console.log("Time = " + data.time);
-	//console.log("Temperature = " + data.temp);
-	
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
 		
@@ -130,7 +125,7 @@ router.post('/messages', function(req, res) {
         // after all data is returned, close connection and return results
         query.on('end', function() {
             client.end();
-            return res.json({ message: 'POST was successful!', device: data.dev_id});
+            return res.json({ message: 'POST was successful!', device: data.dev_id, latitude: data.lat, longitude: data.lon, time: data.time, temperature: data.temp});
         });
 
         // handle errors
@@ -223,7 +218,7 @@ router.post('/geofences', function(req, res) {
         // after all data is returned, close connection and return results
         query.on('end', function() {
             client.end();
-            return res.json({ message: 'POST was successful!', device: data.dev_id})
+            return res.json({ message: 'POST was successful!', device: data.dev_id, latitude: data.lat, longitude: data.lon, radius: data.radius})
         });
 
         // handle errors
@@ -325,7 +320,7 @@ router.put('/geofences/:id', function(req, res) {
         // after all data is returned, close connection and return results
         query.on('end', function() {
             client.end();
-            return res.json({ message: 'UPDATE was successful!', geofence: geofenceId, lon: data.lon, lat: data.lat, radius: data.radius});
+            return res.json({ message: 'UPDATE was successful!', geofence: geofenceId, latitude: data.lat, longitude: data.lon, radius: data.radius});
         });
 
         // handle errors
@@ -369,6 +364,7 @@ router.get('/geofences/:geofence_id/:message_id', function(req, res) {
     var result;
     var messageLat;
     var messageLon;
+	var coordinates = [];
     var geofenceId = req.params.geofence_id;
     var messageId = req.params.message_id;
 
@@ -376,24 +372,34 @@ router.get('/geofences/:geofence_id/:message_id', function(req, res) {
     pg.connect(conString, function(err, client, done) {
 
         // SQL Query - select data
-        var queryData = client.query('SELECT * FROM messages WHERE message_id = ($1)', [messageId]);
+        var queryData = client.query('SELECT lon, lat FROM messages WHERE message_id = ($1)', [messageId]);
 
         // stream results back one row at a time
         queryData.on('row', function(row) {
-            messageLat = row.lat;
+            
+			console.log(row.lat);
+			console.log(row.lon);
+			messageLat = row.lat;
             messageLon = row.lon;
+			//coordinates.push(row);
         });
-
+		console.log("Latitude = " + messageLat); // undefined
+		console.log("Longitude = " + messageLon); // undefined
+		//console.log("Latitude from array = " + coordinates[0]);
+		//console.log("Longitude from array = " + coordinates[1]);
+			
         // SQL Query - select function
         var queryFunction = client.query('SELECT point_in_geofence($1, $2, $3)', [geofenceId, messageLon, messageLat]);
-
-        // stream results back one row at a time
+		//console.log(util.inspect(queryFunction, {showHidden: false, depth: null}));
+        
+		// stream results back one row at a time
         queryFunction.on('row', function(row) {
             result = row.point_in_geofence;
+			console.log("Result = " + result);
         });
 
         // after all data is returned, close connection and return results
-        query.on('end', function() {
+        queryFunction.on('end', function() {
             client.end();
             return res.json({ pointInPolygon: result });
         });
@@ -427,7 +433,7 @@ router.post('/devices', function(req, res) {
         // after all data is returned, close connection and return results
         query.on('end', function() {
             client.end();
-            return res.json({ message: 'POST was successful!', device: data.dev_id})
+            return res.json({ message: 'POST was successful!', device: data.dev_id, theft_protection_active: data.status})
         });
 
         // handle errors
