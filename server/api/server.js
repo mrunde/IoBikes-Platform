@@ -18,13 +18,12 @@ Table of Content
 var express = require('express');         // call express framework
 var app = express();                      // define our app using express
 var bodyParser = require('body-parser');  // important package for post method
-var multer = require('multer'); 
+var multer = require('multer'); 		  // middleware for handling multipart/form-data
 
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
-// change username and password before starting the server 
+// replace USERNAME and PASSWORD before starting the server 
 var conString = process.env.DATABASE_URL || 'postgres://USERNAME:PASSWORD@giv-iob.uni-muenster.de/iob';
-//var db_model = require('./app/models/database');
 
 // Public folder to upload media, etc. (not required yet)
 app.set("view options", {layout: false});
@@ -35,9 +34,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer()); // for parsing multipart/form-data
 
-var port = process.env.PORT || 80;      // set our port, change before roll-out
-
-//var http = require('http');
+var port = process.env.PORT || 80;      // set our port, change before roll-out, remove '|| 80' when using iisnode
 
 /****************************
 	2. Routes for API
@@ -68,18 +65,6 @@ var handleError = function(err) {
 router.get('/', function(req, res) {
     res.json({ message: 'Welcome to our IoB API!' });
 });
-
-/* try with DB model -- not working because tutorial was for mongoDB
-router.route('/messages')
-    // get all the messages (accessed at GET http://localhost:8080/api/messages)
-    .get(function(req, res) {
-        Messages.find(function(err, messages) {
-            if (err)
-                res.send(err);
-            res.json(messages);
-        });
-    });
-*/
 
 /***************
 2.1 Messages
@@ -320,7 +305,7 @@ router.get('/geofences/:id', function(req, res) {
 router.put('/geofences/:id', function(req, res) {
 
     var results = [];
-    var geofenceId = req.params.geofence_id;
+    var geofenceId = req.params.id;
     var data = {lon: req.body.lon, lat: req.body.lat, radius: req.body.radius};
     
     // get a postgres client from the connection pool
