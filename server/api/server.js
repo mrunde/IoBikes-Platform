@@ -8,6 +8,7 @@ Table of Content
 	2.1 Messages
 	2.2 Geofences
 	2.3 Devices
+	2.4 Testing
 *******************************************************************************/
 
 /****************************
@@ -19,7 +20,8 @@ var express = require('express');         // call express framework
 var app = express();                      // define our app using express
 var bodyParser = require('body-parser');  // important package for post method
 var multer = require('multer'); 		  // middleware for handling multipart/form-data
-var util = require('util');
+var util = require('util');				  // for logging and debugging
+var GeoJSON = require('geojson');		  // convert an array of geographic objects to GeoJSON
 	
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
@@ -377,12 +379,15 @@ router.get('/geofences/:geofence_id/:message_id', function(req, res) {
         // stream results back one row at a time
         queryData.on('row', function(row) {
             
-			console.log(row.lat);
-			console.log(row.lon);
+			//console.log(row.lat);
+			//console.log(row.lon);
+			
 			messageLat = row.lat;
             messageLon = row.lon;
 			//coordinates.push(row);
+	
         });
+		
 		console.log("Latitude = " + messageLat); // undefined
 		console.log("Longitude = " + messageLon); // undefined
 		//console.log("Latitude from array = " + coordinates[0]);
@@ -539,10 +544,50 @@ router.delete('/devices/:device_id', function(req, res) {
     });
 });
 
+/***************
+2.4 Testing
+****************/
+// GET all messages with coordinates sent from a real device to get a GeoJSON and display the locations on a map
+router.get('/test/:device_id', function(req, res) {
+
+	var results = [];
+	var deviceId = req.params.device_id;
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+        // SQL Query - select data
+        var query = client.query({
+			text: 'SELECT * FROM messages WHERE device_id = $1 AND lat IS NOT NULL AND lon IS NOT NULL ORDER BY message_id DESC', 
+			values: [deviceId]
+		});
+		
+        // stream results back one row at a time
+        query.on('row', function(row) {
+            results.push(row);
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+			var geo = GeoJSON.parse(results, {Point: ['lat', 'lon']});
+			//console.log(geo);
+			return res.json(geo);
+        });
+
+        // handle errors
+        if(err) {
+          console.log(err);
+		  res.json({ message: 'Error!' });
+        }
+
+    });
+	
+});
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
-app.use('/api', router);
+app.use('/api', router); // when using iisnode use '/node/api' instead
 
 // START THE SERVER
 // =============================================================================
