@@ -21,5 +21,8 @@ CREATE TABLE messages (
 	lat double precision,
 	lon double precision,
 	"time" timestamp without time zone,
-	temp double precision
+	temp double precision,
+	snr double precision,
+	rssi double precision,
+	signal double precision
 );
