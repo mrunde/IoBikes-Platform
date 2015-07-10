@@ -45,6 +45,33 @@ if($echo){
 	echo 'device_id: ' . $device_id . "\n";
 }
 
+// signal ratio
+$snr = ($_GET["snr"]);
+if($log){
+	$logger = $logger . 'snr: ' . $snr . "\n";
+}
+if($echo){
+	echo 'snr: ' . $snr . "\n";
+}
+
+// rssi
+$rssi = ($_GET["rssi"]);
+if($log){
+	$logger = $logger . 'rssi: ' . $rssi . "\n";
+}
+if($echo){
+	echo 'rssi: ' . $rssi . "\n";
+}
+
+// signal strength
+$signal = ($_GET["avgSignal"]);
+if($log){
+	$logger = $logger . 'signal: ' . $signal . "\n";
+}
+if($echo){
+	echo 'signal: ' . $signal . "\n";
+}
+
 // data_string
 $data_string = ($_GET["data"]);
 if($log){
@@ -233,7 +260,7 @@ if($echo){
 }
 
 // insert statement messages table
-$insert_messages = "INSERT INTO messages (device_id, lon, lat, time, temp) VALUES ('$device_id', $lon_decimal, $lat_decimal, '$timestamp', '$temperature_integer')";
+$insert_messages = "INSERT INTO messages (device_id, lon, lat, time, temp, snr, rssi, signal) VALUES ('$device_id', $lon_decimal, $lat_decimal, '$timestamp', '$temperature_integer', '$snr', '$rssi', '$signal')";
 if($log){
 	$logger = $logger . 'insert statement for messages table: ' . $insert_messages . "\n"; 
 }
