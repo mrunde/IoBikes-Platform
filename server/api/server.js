@@ -47,8 +47,8 @@ var router = express.Router(); // get an instance of the express router
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
-    // do logging of request
-    console.log('There was an API request.');
+    // log each request to the console
+    console.log(req.method, req.url);
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -66,7 +66,7 @@ var handleError = function(err) {
 	
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'Welcome to our IoB API!' });
+    res.send('Welcome to our IoB API!');
 });
 
 /***************
@@ -366,49 +366,42 @@ router.get('/geofences/:geofence_id/:message_id', function(req, res) {
     var result;
     var messageLat;
     var messageLon;
-	var coordinates = [];
     var geofenceId = req.params.geofence_id;
     var messageId = req.params.message_id;
 
     // get a postgres client from the connection pool
     pg.connect(conString, function(err, client, done) {
 
-        // SQL Query - select data
-        var queryData = client.query('SELECT lon, lat FROM messages WHERE message_id = ($1)', [messageId]);
-
-        // stream results back one row at a time
-        queryData.on('row', function(row) {
-            
-			//console.log(row.lat);
-			//console.log(row.lon);
+        // SQL Query - select latitude and longitude of message
+		client.query('SELECT lon, lat FROM messages WHERE message_id = ($1)', [messageId], function(err, result) {
 			
-			messageLat = row.lat;
-            messageLon = row.lon;
-			//coordinates.push(row);
-	
+			//call done() to release the client back to the pool
+			done();
+	  
+			messageLat = result.rows[0].lat;
+			messageLon = result.rows[0].lon;
+				
+			//console.log("Latitude = " + messageLat);
+			//console.log("Longitude = " + messageLon);	
+
+			// SQL Query - select function
+			var queryFunction = client.query('SELECT point_in_geofence($1, $2, $3)', [geofenceId, messageLon, messageLat]);
+			// log query
+			console.log(util.inspect(queryFunction, {showHidden: false, depth: null}));
+			
+			// stream results back one row at a time
+			queryFunction.on('row', function(row) {
+				result = row.point_in_geofence;
+				console.log("Point in Geofence? " + result);
+			});
+
+			// after all data is returned, close connection and return results
+			queryFunction.on('end', function() {
+				client.end();
+				return res.json({ pointInPolygon: result });
+			});
         });
 		
-		console.log("Latitude = " + messageLat); // undefined
-		console.log("Longitude = " + messageLon); // undefined
-		//console.log("Latitude from array = " + coordinates[0]);
-		//console.log("Longitude from array = " + coordinates[1]);
-			
-        // SQL Query - select function
-        var queryFunction = client.query('SELECT point_in_geofence($1, $2, $3)', [geofenceId, messageLon, messageLat]);
-		//console.log(util.inspect(queryFunction, {showHidden: false, depth: null}));
-        
-		// stream results back one row at a time
-        queryFunction.on('row', function(row) {
-            result = row.point_in_geofence;
-			console.log("Result = " + result);
-        });
-
-        // after all data is returned, close connection and return results
-        queryFunction.on('end', function() {
-            client.end();
-            return res.json({ pointInPolygon: result });
-        });
-
         // handle errors
         if(err) {
           console.log(err);
@@ -561,7 +554,7 @@ router.get('/test/:device_id', function(req, res) {
 			text: 'SELECT * FROM messages WHERE device_id = $1 AND lat IS NOT NULL AND lon IS NOT NULL ORDER BY message_id DESC', 
 			values: [deviceId]
 		});
-		
+
         // stream results back one row at a time
         query.on('row', function(row) {
             results.push(row);
@@ -574,7 +567,7 @@ router.get('/test/:device_id', function(req, res) {
 			//console.log(geo);
 			return res.json(geo);
         });
-
+		
         // handle errors
         if(err) {
           console.log(err);
@@ -584,6 +577,40 @@ router.get('/test/:device_id', function(req, res) {
     });
 	
 });
+
+// GET technical information of device measurements (signal strength etc.) - IRRELEVANT
+router.get('/test/signal', function(req, res) {
+
+	var results = [];
+
+    // get a postgres client from the connection pool
+    pg.connect(conString, function(err, client, done) {
+
+		// iob data query
+	    var query = client.query('SELECT data FROM iobdata WHERE id >= 156 ORDER BY id DESC'); 
+
+        // stream results back one row at a time
+        query.on('row', function(row) {
+            results.push(row);
+        });
+
+        // after all data is returned, close connection and return results
+        query.on('end', function() {
+            client.end();
+			return res.json(results);
+        });
+		
+        // handle errors
+        if(err) {
+          console.log(err);
+		  res.json({ message: 'Error!' });
+        }
+
+    });
+	
+});
+		
+		
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
