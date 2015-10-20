@@ -2,6 +2,12 @@
 
 /* CREATE EXTENSION postgis; */
 
+CREATE TABLE iobdata (
+    id SERIAL PRIMARY KEY,
+    ip text,
+    data jsonb
+);
+
 CREATE TABLE IF NOT EXISTS devices (
 	device_id varchar(20) PRIMARY KEY,
 	theft_protection_active boolean NOT NULL
