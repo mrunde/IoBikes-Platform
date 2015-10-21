@@ -7,4 +7,4 @@ dbconfig.database = process.env.DBNAME || "iob";
 // 'postgres://user:password@host/iob'
 dbconfig.conString = "postgres://"+dbconfig.user+":"+dbconfig.password+"@"+dbconfig.host+"/"+dbconfig.database
 
-exports.dbconfig = dbconfig;
+module.exports = dbconfig;
