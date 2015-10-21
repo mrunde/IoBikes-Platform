@@ -1,9 +1,9 @@
 <?php
-include('insert/config.php');
+include('config.php');
 header('Content-Type: application/json');
 
 // logging creates a file with some information in the end
-$log = true;
+$log = false;
 // the echo documents all steps of the script
 $echo = false;
 
@@ -14,7 +14,7 @@ $ignore_iobdata = false;
 $logger = '';
 
 // connection string
-$conn_string = 'host=giv-iob.uni-muenster.de port=5432 dbname=iob user=' . $user . ' password=' . $pass;
+$conn_string = 'host='.$dbhost.' port=5432 dbname='.$dbname.' user=' . $dbuser . ' password=' . $dbpass;
 if($log){
 	$logger = $logger . 'conn_string: ' . $conn_string . "\n";
 }

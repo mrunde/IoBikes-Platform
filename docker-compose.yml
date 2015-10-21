@@ -1,0 +1,31 @@
+iob-web:
+  build: ./server
+  ports:
+    - 80:80
+  links:
+    - db
+    - iob-api
+  volumes:
+    - ./server/conf.d:/etc/nginx/conf.d
+    - ./server/htdocs:/var/www/html
+  environment:
+    DBUSER: postgres
+    DBPASS: postgres
+    DBNAME: postgres
+    DBHOST: db
+
+iob-api:
+  build: ./api
+  links:
+    - db
+  environment:
+    DBUSER: postgres
+    DBPASS: postgres
+    DBNAME: postgres
+    DBHOST: db
+
+db:
+  build: ./database
+  volumes:
+    - ./database:/docker-entrypoint-initdb.d
+    - ./postgres-data:/var/lib/postgresql/data

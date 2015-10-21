@@ -1,25 +1,32 @@
 # IoBikes-Platform
+
 Platform Repository of the Internet of Bicycles project at the Institute for Geoinformatics
 
----
-##The MIT License (MIT)
+## Run with Docker
 
-###Copyright (c) 2015 Marius Runde, Daniel Sawatzky and Lars Syfuß
+Install Docker with docker-compose, clone this repository and then run
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+```docker-compose up```
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This will spawn 3 containers, one for PostgreSQL with PostGIS, one with nginx and PHP5, the third for the API written in NodeJS.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## How to use
+
+Set up your (Sigfox) callback to
+
+```
+http://hostname/insert.php?id=dev999&lat=1.0&lng=1.0&data=0078e04f426412f340&rssi=rssi&time=1434126693&signal=signal&station=station&avgSignal=avgSignal&duplicate=duplicate
+``` 
+
+Insert placeholders as needed, this URL is an example request.
+
+Open `http://hostname/list.php` to check if something has been submitted.
+
+## License
+
+MIT, see [LICENSE](LICENSE)
+
+## Related repositories
+
+* Android app: See [aohrem/IoBApp](https://github.com/aohrem/IoBApp)
+* Device group: See [nicho90/IoB-Devices](https://github.com/nicho90/IoB-Devices)

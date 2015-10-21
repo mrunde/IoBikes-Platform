@@ -22,11 +22,13 @@ var bodyParser = require('body-parser');  // important package for post method
 var multer = require('multer'); 		  // middleware for handling multipart/form-data
 var util = require('util');				  // for logging and debugging
 var GeoJSON = require('geojson');		  // convert an array of geographic objects to GeoJSON
+
+var dbconfig = require('./config.js');
 	
 // Database connection
 var pg = require('pg'); // call PostgreSQL client (https://github.com/brianc/node-postgres)
 // replace USERNAME and PASSWORD before starting the server 
-var conString = process.env.DATABASE_URL || 'postgres://USERNAME:PASSWORD@giv-iob.uni-muenster.de/iob';
+var conString = process.env.DATABASE_URL || dbconfig.conString;
 
 // Public folder to upload media, etc. (not required yet)
 app.set("view options", {layout: false});

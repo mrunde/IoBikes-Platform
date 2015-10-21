@@ -12,5 +12,8 @@
     "leaflet-realtime": "^1.1.1",
     "multer": "^0.1.8",
     "pg": "^4.3.0"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
