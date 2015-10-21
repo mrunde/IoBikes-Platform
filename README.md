@@ -14,7 +14,9 @@ This will spawn 3 containers, one for PostgreSQL with PostGIS, one with nginx an
 
 Set up your (Sigfox) callback to
 
-```http://hostname/insert.php?id=dev999&lat=1.0&lng=1.0&data=0078e04f426412f340&rssi=rssi&time=1434126693&signal=signal&station=station&avgSignal=avgSignal&duplicate=duplicate``` 
+```
+http://hostname/insert.php?id=dev999&lat=1.0&lng=1.0&data=0078e04f426412f340&rssi=rssi&time=1434126693&signal=signal&station=station&avgSignal=avgSignal&duplicate=duplicate
+``` 
 
 Insert placeholders as needed, this URL is an example request.
 
