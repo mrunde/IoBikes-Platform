@@ -1,6 +1,8 @@
 # IoBikes-Platform
 Platform Repository of the Internet of Bicycles project at the Institute for Geoinformatics
 
+![IoBikes Wallpaper](https://raw.githubusercontent.com/mrunde/IoBikes-Platform/master/IoBikes%20-%20Wallpaper.png)
+
 ---
 ##The MIT License (MIT)
 
